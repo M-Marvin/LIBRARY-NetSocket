@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="org.eclipse.cdt.core.default.config.205252450">
+			<storageModule buildSystemId="org.eclipse.cdt.core.defaultConfigDataProvider" id="org.eclipse.cdt.core.default.config.205252450" moduleId="org.eclipse.cdt.core.settings" name="Configuration">
+				<externalSettings/>
+				<extensions/>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
+		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/x86_64-w64-mingw32" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/backward" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/x86_64-w64-mingw32/include" kind="inc" path="" system="true"/>
+		<pathentry include="E:/GitHub/LIBRARY-NetSocket/NetworkAccess/src/cpp/public" kind="inc" path="" system="true"/>
+		<pathentry kind="mac" name="PLATFORM_WIN" path="" value=""/>
+	</storageModule>
+</cproject>

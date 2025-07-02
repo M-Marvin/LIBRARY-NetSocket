@@ -1,0 +1,74 @@
+import de.m_marvin.metabuild.core.script.BuildScript;
+import de.m_marvin.metabuild.cpp.script.CppMultiTargetBuildScript;
+import de.m_marvin.metabuild.maven.tasks.MavenPublishTask;
+import de.m_marvin.metabuild.maven.types.Repository;
+import de.m_marvin.metabuild.maven.types.Repository.Credentials;
+
+public class Buildfile extends CppMultiTargetBuildScript {
+	
+	boolean debugging = false;
+	
+	String version = "1.0";
+	
+	@Override
+	public void init() {
+		
+		projectName = "netsocket";
+		
+		// Windows AMD 64
+		var target = makeTarget("WinAMD64", "libnetsocket_x64.dll");
+		target.compileCpp.compiler = target.linkCpp.linker = "win-amd-64-g++";
+		target.compileCpp.define("PLATFORM_WIN");
+		if (debugging) target.compileCpp.options.add("-g");
+		target.linkCpp.libraries.add("Ws2_32");
+		target.linkCpp.options.add("-shared");
+		target.linkCpp.options.add("-static-libgcc");
+		target.linkCpp.options.add("-static-libstdc++");
+
+		// Linux AMD 64
+		target = makeTarget("LinAMD64", "libnetsocket_x64.so");
+		target.compileCpp.compiler = target.linkCpp.linker = "lin-amd-64-g++";
+		target.compileCpp.define("PLATFORM_LIN");
+		if (debugging) target.compileCpp.options.add("-g");
+		target.compileCpp.options.add("-fPIC");
+		target.compileCpp.options.add("-fno-stack-protector");
+		target.linkCpp.options.add("-shared");
+
+		// Linux ARM 64
+		target = makeTarget("LinARM64", "libnetsocket_arm64.so");
+		target.compileCpp.compiler = target.linkCpp.linker = "lin-arm-64-g++";
+		target.compileCpp.define("PLATFORM_LIN");
+		target.compileCpp.options.add("-fPIC");
+		if (debugging) target.compileCpp.options.add("-g");
+		target.linkCpp.options.add("-shared");
+
+		// Linux ARM 32
+		target = makeTarget("LinARM32", "libnetsocket_arm32.so");
+		target.compileCpp.compiler = target.linkCpp.linker = "lin-arm-32-g++";
+		target.compileCpp.define("PLATFORM_LIN");
+		target.compileCpp.options.add("-fPIC");
+		if (debugging) target.compileCpp.options.add("-g");
+		target.linkCpp.options.add("-shared");
+		
+		super.init();
+		
+	}
+
+	@Override
+	public void publishing(MavenPublishTask publish, MavenPublishTask publishLocal, String config) {
+		
+		publishLocal.coordinates("de.m_marvin.netsocket:netsocket-" + config.toLowerCase() + ":" + version);
+		
+		publish.coordinates("de.m_marvin.netsocket:netsocket-" + config.toLowerCase() + ":" + version);
+		publish.repository(new Repository(
+				"GHP [NetSocket]", 
+				"https://maven.pkg.github.com/m-marvin/library-netsocket",
+				new Credentials(
+						() -> System.getenv("GITHUB_ACTOR"), 
+						() -> System.getenv("GITHUB_TOKEN")
+				)
+		));
+		
+	}
+	
+}
