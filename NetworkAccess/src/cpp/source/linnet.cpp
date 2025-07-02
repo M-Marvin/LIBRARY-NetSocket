@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
-#include "network.hpp"
+#include "netsocket.hpp"
 
 /*
  * On linux read functions may never return if the socket is closed or other special conditions occur
