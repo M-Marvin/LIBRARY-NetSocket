@@ -321,7 +321,7 @@ public:
 
 		int result = ::recv(this->handle, buffer, length, 0);
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:sendto:sendto(): %s\n");
+			printError("error %d in Socket:receive:recv(): %s\n");
 			return false;
 		} else {
 			*received = result;
@@ -342,7 +342,7 @@ public:
 		int senderAdressLen = sizeof(SOCKADDR_IN6);
 		int result = ::recvfrom(this->handle, buffer, length, 0, &((addr_t*) address.addr)->sockaddrU, &senderAdressLen);
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:sendto:sendto(): %s\n");
+			printError("error %d in Socket:receivefrom:recvfrom(): %s\n");
 			return false;
 		} else {
 			*received = result;
@@ -362,7 +362,7 @@ public:
 		}
 
 		if (((addr_t*) address.addr)->sockaddrU.sa_family != this->addrType) {
-			printf("tried to call receivefrom() with invalid address type for this socket!\n");
+			printf("tried to call sendto() with invalid address type for this socket!\n");
 			return false;
 		}
 
