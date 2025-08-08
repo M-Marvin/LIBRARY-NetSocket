@@ -104,7 +104,7 @@ bool NetSocket::INetAddress::tostr(std::string& addressStr, unsigned int* port) 
 	if (((addr_t*) this->addr)->sockaddrU.sa_family == AF_INET) {
 		char addrStr[INET_ADDRSTRLEN];
 		if (inet_ntop(AF_INET, &((addr_t*) this->addr)->sockaddr4.sin_addr, addrStr, INET_ADDRSTRLEN) == 0) {
-			printError("Error %lu in INetAddress:tostr:inet_ntop(): %s\n");
+			printError("Error %lu in INetAddress:tostr:inet_ntop(): %s");
 			return false;
 		}
 		*port = htons(((addr_t*) this->addr)->sockaddr4.sin_port);
@@ -113,7 +113,7 @@ bool NetSocket::INetAddress::tostr(std::string& addressStr, unsigned int* port) 
 	} else if (((addr_t*) this->addr)->sockaddrU.sa_family == AF_INET6) {
 		char addrStr[INET6_ADDRSTRLEN];
 		if (inet_ntop(((addr_t*) this->addr)->sockaddr6.sin6_family, &((addr_t*) this->addr)->sockaddr6.sin6_addr, addrStr, INET6_ADDRSTRLEN) == 0) {
-			printError("Error %lu in INetAddress:tostr:inet_ntop(): %s\n");
+			printError("Error %lu in INetAddress:tostr:inet_ntop(): %s");
 			return false;
 		}
 		*port = htons(((addr_t*) this->addr)->sockaddr6.sin6_port);
@@ -134,7 +134,7 @@ bool NetSocket::resolveInet(const std::string& hostStr, const std::string& portS
 
 	struct addrinfo *info = 0, *ptr = 0;
 	if (::getaddrinfo(hostStr.c_str(), portStr.c_str(), &hints, &info) != 0) {
-		printError("Error %lu in Socket:resolveInet:getaddrinfo(): %s\n");
+		printError("Error %lu in Socket:resolveInet:getaddrinfo(): %s");
 		return false;
 	}
 
@@ -178,6 +178,53 @@ public:
 		return GetLastError();
 	}
 
+	bool getINet(NetSocket::INetAddress& address) override {
+		if (this->stype == NetSocket::UNBOUND) {
+			printf("tried to call listen() on unbound socket!\n");
+			return false;
+		}
+
+		int addrlen = sizeof(sockaddr);
+		if (::getpeername(this->handle, &((addr_t*) address.addr)->sockaddrU, &addrlen) == SOCKET_ERROR) {
+			printError("error %d in Socket:getINet:getpeername(): %s");
+			return false;
+		}
+
+		return true;
+	}
+
+	bool setNagle(bool enableBuffering) override {
+		if (this->stype != NetSocket::STREAM) {
+			printf("tried to call setNagle() on non stream socket!\n");
+			return false;
+		}
+
+		DWORD optval = enableBuffering ? 0 : 1;
+		if (::setsockopt(this->handle, IPPROTO_TCP, TCP_NODELAY, (const char*) &optval, sizeof(DWORD)) == SOCKET_ERROR) {
+			printError("error %d in Socket:setNagle:setsockopt(TCP_NODELAY): %s");
+			return false;
+		}
+
+		return true;
+	}
+
+	bool getNagle(bool* enableBuffering) override {
+		if (this->stype != NetSocket::STREAM) {
+			printf("tried to call getNagle() on non stream socket!\n");
+			return false;
+		}
+
+		int optlen = sizeof(DWORD);
+		DWORD optval = 0;
+		if (::getsockopt(this->handle, IPPROTO_TCP, TCP_NODELAY, (char*) &optval, &optlen) == SOCKET_ERROR) {
+			printError("error %d in Socket:getNagle:setsockopt(TCP_NODELAY): %s");
+			return false;
+		}
+
+		*enableBuffering = optval == 1 ? false : true;
+		return true;
+	}
+
 	bool listen(const NetSocket::INetAddress& address) override {
 		if (this->stype != NetSocket::UNBOUND) {
 			printf("tried to call listen() on already bound socket!\n");
@@ -187,13 +234,13 @@ public:
 		this->addrType = ((addr_t*) address.addr)->sockaddrU.sa_family;
 		this->handle = ::socket(((addr_t*) address.addr)->sockaddrU.sa_family, SOCK_STREAM, IPPROTO_TCP);
 		if (this->handle == INVALID_SOCKET) {
-			printError("error %d in Socket:listen:socket(): %s\n");
+			printError("error %d in Socket:listen:socket(): %s");
 			return false;
 		}
 
 		int result = ::bind(this->handle, &((addr_t*) address.addr)->sockaddrU, ((addr_t*) address.addr)->sockaddrU.sa_family == AF_INET ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6));
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:listen:bind(): %s\n");
+			printError("error %d in Socket:listen:bind(): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -201,7 +248,7 @@ public:
 
 		result = ::listen(this->handle, SOMAXCONN);
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:listen:listen(): %s\n");
+			printError("error %d in Socket:listen:listen(): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -220,12 +267,12 @@ public:
 		this->addrType = ((addr_t*) address.addr)->sockaddrU.sa_family;
 		this->handle = ::socket(((addr_t*) address.addr)->sockaddrU.sa_family, SOCK_DGRAM, IPPROTO_UDP);
 		if (this->handle == INVALID_SOCKET) {
-			printError("error %d in Socket:bind:socket(): %s\n");
+			printError("error %d in Socket:bind:socket(): %s");
 			return false;
 		}
 
 		if (::bind(this->handle, &((addr_t*) address.addr)->sockaddrU, ((addr_t*) address.addr)->sockaddrU.sa_family == AF_INET ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6)) == SOCKET_ERROR) {
-			printError("error %d in Socket:bind:bind(): %s\n");
+			printError("error %d in Socket:bind:bind(): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -247,7 +294,7 @@ public:
 
 		SOCKET clientSocket = ::accept(this->handle, NULL, NULL);
 		if (clientSocket == INVALID_SOCKET) {
-			printError("error %d in Socket:accept:accept(): %s\n");
+			printError("error %d in Socket:accept:accept(): %s");
 			return false;
 		}
 
@@ -257,7 +304,36 @@ public:
 		return true;
 	}
 
-	bool connect(const NetSocket::INetAddress& address) override {
+	bool setTimeouts(unsigned long readTimeout, unsigned long writeTimeout) override {
+		if (this->stype == NetSocket::UNBOUND) {
+			printf("tried to call setTimeouts() on unbound socket!\n");
+			return false;
+		}
+
+		DWORD rcvTimeout = readTimeout;
+		DWORD sndTimeout = writeTimeout;
+		bool b1 = setsockopt(this->handle, SOL_SOCKET, SO_RCVTIMEO, (const char*) &rcvTimeout, sizeof(DWORD)) == 0;
+		bool b2 = setsockopt(this->handle, SOL_SOCKET, SO_SNDTIMEO, (const char*) &sndTimeout, sizeof(DWORD)) == 0;
+		return b1 && b2;
+	}
+
+	bool getTimeouts(unsigned long* readTimeout, unsigned long* writeTimeout) override {
+		if (this->stype == NetSocket::UNBOUND) {
+			printf("tried to call getTimeouts() on unbound socket!\n");
+			return false;
+		}
+
+		int optlen = 0;
+		DWORD rcvTimeout = 0;
+		DWORD sndTimeout = 0;
+		bool b1 = getsockopt(this->handle, SOL_SOCKET, SO_RCVTIMEO, (char*) &rcvTimeout, &optlen) == 0;
+		bool b2 = getsockopt(this->handle, SOL_SOCKET, SO_SNDTIMEO, (char*) &sndTimeout, &optlen) == 0;
+		if (b1) *readTimeout = rcvTimeout;
+		if (b2) *writeTimeout = sndTimeout;
+		return b1 && b2;
+	}
+
+	bool connect(const NetSocket::INetAddress& address, unsigned long timeout) override {
 		if (this->stype != NetSocket::UNBOUND) {
 			printf("tried to call connect() on already bound socket!\n");
 			return false;
@@ -265,13 +341,63 @@ public:
 
 		this->handle = ::socket(((addr_t*) address.addr)->sockaddrU.sa_family, SOCK_STREAM, IPPROTO_TCP);
 		if (this->handle == INVALID_SOCKET) {
-			printError("error %d in Socket:connect:socket(): %s\n");
+			printError("error %d in Socket:connect:socket(): %s");
 			return false;
 		}
 
+		unsigned long nonblock = 1;
+		if (::ioctlsocket(this->handle, FIONBIO, &nonblock) == SOCKET_ERROR) {
+			printError("error %d in Socket:connect:ioctlsocket(FIONBIO=1): %s");
+			::closesocket(this->handle);
+			this->handle = INVALID_SOCKET;
+			return false;
+		}
+
+		fd_set fdsetRW, fdsetE;
+		fdsetRW.fd_count = 1;
+		fdsetRW.fd_array[0] = this->handle;
+		fdsetE.fd_count = 1;
+		fdsetE.fd_array[0] = this->handle;
+
 		int result = ::connect(this->handle, &((addr_t*) address.addr)->sockaddrU, ((addr_t*) address.addr)->sockaddrU.sa_family == AF_INET ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6));
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:connect:connect(): %s\n");
+
+			if (WSAGetLastError() != WSAEWOULDBLOCK) {
+				printError("error %d in Socket:connect:connect(): %s");
+				::closesocket(this->handle);
+				this->handle = INVALID_SOCKET;
+				return false; // error, could not start connect
+			} else {
+				TIMEVAL timeoutVal = {
+					.tv_sec = timeout / 1000,
+					.tv_usec = (timeout % 1000) * 1000
+				};
+				result = ::select(0, &fdsetRW, &fdsetRW, &fdsetE, &timeoutVal);
+				if (result == 0) {
+					::closesocket(this->handle);
+					this->handle = INVALID_SOCKET;
+					return false; // timed out
+				} else if (result == SOCKET_ERROR) {
+					printError("error %d in Socket:connect:select: %s");
+					::closesocket(this->handle);
+					this->handle = INVALID_SOCKET;
+					return false; // error while waiting
+				} else if (FD_ISSET(this->handle, &fdsetE)) {
+					int err = 0, optlen = sizeof(int);
+					::getsockopt(this->handle, SOL_SOCKET, SO_ERROR, (char*) &err, &optlen);
+					WSASetLastError(err);
+					printError("error %d in Socket:connect:connect(): %s");
+					::closesocket(this->handle);
+					this->handle = INVALID_SOCKET;
+					return false; // returned but with error
+				}
+			}
+
+		}
+
+		nonblock = 0;
+		if (::ioctlsocket(this->handle, FIONBIO, &nonblock) == SOCKET_ERROR) {
+			printError("error %d in Socket:connect:ioctlsocket(FIONBIO=0): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -303,7 +429,11 @@ public:
 
 		int result = ::send(this->handle, buffer, length, 0);
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:send:send(): %s\n");
+			if (WSAGetLastError() == WSAETIMEDOUT)
+				return true; // timed out
+			else if (WSAGetLastError() == WSAECONNRESET || WSAGetLastError() == WSAECONNABORTED)
+				return false; // connection closed
+			printError("error %d in Socket:send:send(): %s");
 			return false;
 		}
 
@@ -320,8 +450,14 @@ public:
 		}
 
 		int result = ::recv(this->handle, buffer, length, 0);
-		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:receive:recv(): %s\n");
+		if (result == 0) {
+			return false; // connection closed
+		} else if (result == SOCKET_ERROR) {
+			if (WSAGetLastError() == WSAETIMEDOUT)
+				return true; // timed out
+			else if (WSAGetLastError() == WSAECONNRESET || WSAGetLastError() == WSAECONNABORTED)
+				return false; // connection closed
+			printError("error %d in Socket:receive:recv(): %s");
 			return false;
 		} else {
 			*received = result;
@@ -341,8 +477,14 @@ public:
 
 		int senderAdressLen = sizeof(SOCKADDR_IN6);
 		int result = ::recvfrom(this->handle, buffer, length, 0, &((addr_t*) address.addr)->sockaddrU, &senderAdressLen);
-		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:receivefrom:recvfrom(): %s\n");
+		if (result == 0) {
+			return false; // connection closed
+		} else if (result == SOCKET_ERROR) {
+			if (WSAGetLastError() == WSAETIMEDOUT)
+				return true; // timed out
+			else if (WSAGetLastError() == WSAECONNRESET || WSAGetLastError() == WSAECONNABORTED)
+				return false; // connection closed
+			printError("error %d in Socket:receivefrom:recvfrom(): %s");
 			return false;
 		} else {
 			*received = result;
@@ -368,7 +510,11 @@ public:
 
 		int result = ::sendto(this->handle, buffer, length, 0, &((addr_t*) address.addr)->sockaddrU, ((addr_t*) address.addr)->sockaddrU.sa_family == AF_INET ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6));
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:sendto:sendto(): %s\n");
+			if (WSAGetLastError() == WSAETIMEDOUT)
+				return true; // timed out
+			else if (WSAGetLastError() == WSAECONNRESET || WSAGetLastError() == WSAECONNABORTED)
+				return false; // connection closed
+			printError("error %d in Socket:sendto:sendto(): %s");
 			return false;
 		}
 

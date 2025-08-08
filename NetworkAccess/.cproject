@@ -13,13 +13,14 @@
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
-		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++" kind="inc" path="" system="true"/>
-		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/x86_64-w64-mingw32" kind="inc" path="" system="true"/>
-		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/backward" kind="inc" path="" system="true"/>
-		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include" kind="inc" path="" system="true"/>
-		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed" kind="inc" path="" system="true"/>
-		<pathentry include="D:/Programms/toolchains/mingw64-msvcrt/x86_64-w64-mingw32/include" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/SysGCC-linux/x86_64-linux-gnu/include/c++/9" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/SysGCC-linux/x86_64-linux-gnu/include/c++/9/backward" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/SysGCC-linux/lib/gcc/x86_64-linux-gnu/9/include" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/SysGCC-linux/lib/gcc/x86_64-linux-gnu/9/include-fixed" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/SysGCC-linux/x86_64-linux-gnu/include" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/SysGCC-linux/x86_64-linux-gnu/sysroot/usr/include/x86_64-linux-gnu" kind="inc" path="" system="true"/>
+		<pathentry include="D:/Programms/toolchains/SysGCC-linux/x86_64-linux-gnu/sysroot/usr/include" kind="inc" path="" system="true"/>
 		<pathentry include="E:/GitHub/LIBRARY-NetSocket/NetworkAccess/src/cpp/public" kind="inc" path="" system="true"/>
-		<pathentry kind="mac" name="PLATFORM_WIN" path="" value=""/>
+		<pathentry kind="mac" name="PLATFORM_LIN" path="" value=""/>
 	</storageModule>
 </cproject>

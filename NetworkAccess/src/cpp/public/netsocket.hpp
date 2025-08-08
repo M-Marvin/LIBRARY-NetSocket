@@ -66,6 +66,27 @@ public:
 	virtual ~Socket() = default;
 
 	/**
+	 * Returns the inet address this socket is currently connected to.
+	 * @param address The address object which has to be filled with the address data
+	 * @return true if the address was read successfully, false otherwise
+	 */
+	virtual bool getINet(inetaddr& address) = 0;
+
+	/**
+	 * Enables or disables the nagle buffering algorithm for this TCP socket.
+	 * @param enableBuffering true for enabling buffering, false for disabling
+	 * @return true if the new state was set successfully, false otherwise
+	 */
+	virtual bool setNagle(bool enableBuffering) = 0;
+
+	/**
+	 * Reads the current setting for the nagle buffering algorithm for this TCP socket.
+	 * @param enableBuffering Where to store the current state
+	 * @return true if the state was read successfully, false otherwise
+	 */
+	virtual bool getNagle(bool* enableBuffering) = 0;
+
+	/**
 	 * Creates a new TCP port that can accept incoming connections usign the accept() function
 	 * @param localAddress The local address to bind the socket to
 	 * @return true if the port was successfully bound, false otherwise
@@ -73,19 +94,38 @@ public:
 	virtual bool listen(const inetaddr& localAddress) = 0;
 
 	/**
-	 * Attempts to accept an incomming connection and initializes the supplied (unbound) socket for it as TCP stream socket.
+	 * Attempts to accept an incoming connection and initializes the supplied (unbound) socket for it as TCP stream socket.
 	 * This function blocks until an connection is received.
-	 * @param clientSocket The unbound socket to use for the incomming connection
+	 * @param clientSocket The unbound socket to use for the incoming connection
 	 * @return true if an connection was accepted and the socket was initialized successfully, false otherwise
 	 */
 	virtual bool accept(Socket &clientSocket) = 0;
 
 	/**
+	 * Configures the read and write timeouts for this network socket.
+	 * @param readTimeout The timeout for reading from the socket in ms
+	 * @param writeTimeout The timeout for writing to the socket in ms
+	 * @return true if the timeout was set, false otherwise
+	 */
+	virtual bool setTimeouts(unsigned long readTimeout, unsigned long writeTimeout) = 0;
+
+	/**
+	 * Reads the currently configured timeouts for this network socket.
+	 * A timeout of zero means to block indefinitely.
+	 * @param readTimeout Where to store the timeout for reading from the socket
+	 * @param writeTimeout Where to store the timeout for writing to the socket
+	 * @return true if the timeout was read, false otherwise
+	 */
+	virtual bool getTimeouts(unsigned long* readTimeout, unsigned long* writeTimeout) = 0;
+
+	/**
 	 * Attempts to establish a connection to an TCP listen socket at the specified address.
+	 * A timeout of zero means to block indefinitely.
 	 * @param remoteAddress The address to connect to
+	 * @param timeout The timeout used for connecting, may be limited by the operating system
 	 * @return true if an connection was successfully established, false otherwise
 	 */
-	virtual bool connect(const inetaddr& remoteAddress) = 0;
+	virtual bool connect(const inetaddr& remoteAddress, unsigned long timeout) = 0;
 
 	/**
 	 * Sends data trough the TCP connection.
