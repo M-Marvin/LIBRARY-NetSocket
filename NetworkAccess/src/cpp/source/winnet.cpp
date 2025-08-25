@@ -184,7 +184,7 @@ public:
 			return false;
 		}
 
-		int addrlen = sizeof(sockaddr);
+		int addrlen = sizeof(addr_t);
 		if (::getpeername(this->handle, &((addr_t*) address.addr)->sockaddrU, &addrlen) == SOCKET_ERROR) {
 			printError("error %d in Socket:getINet:getpeername(): %s");
 			return false;

@@ -6,9 +6,9 @@ import de.m_marvin.metabuild.maven.types.Repository.Credentials;
 
 public class Buildfile extends CppMultiTargetBuildScript {
 	
-	boolean debugging = false;
+	boolean debugging = true;
 	
-	String version = "1.1.1";
+	String version = "1.1.2-SNAPSHOT";
 	
 	@Override
 	public void init() {

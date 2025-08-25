@@ -60,7 +60,7 @@ enum SocketType {
 	STREAM = 3
 };
 
-class Socket {
+class Socket { // TODO overlapped/asynchronous mode for read/write
 
 public:
 	virtual ~Socket() = default;
