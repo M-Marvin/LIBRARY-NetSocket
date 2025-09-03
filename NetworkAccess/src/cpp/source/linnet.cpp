@@ -183,6 +183,10 @@ public:
 
 		unsigned int addrlen = sizeof(addr_t);
 		if (::getpeername(this->handle, &((addr_t*) address.addr)->sockaddrU, &addrlen) == -1) {
+			if (errno == EBADF || errno == EIO) {
+				close();
+				return false;
+			}
 			printError("error %d in Socket:getINet:getpeername(): %s\n");
 			return false;
 		}
@@ -198,6 +202,10 @@ public:
 
 		unsigned int optval = enableBuffering ? 0 : 1;
 		if (::setsockopt(this->handle, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(int)) == -1) {
+			if (errno == EBADF || errno == EIO) {
+				close();
+				return false;
+			}
 			printError("error %d in Socket:setNagle:setsockopt(TCP_NODELAY): %s\n");
 			return false;
 		}
@@ -214,6 +222,10 @@ public:
 		unsigned int optlen = sizeof(int);
 		int optval = 0;
 		if (::getsockopt(this->handle, IPPROTO_TCP, TCP_NODELAY, &optval, &optlen) == -1) {
+			if (errno == EBADF || errno == EIO) {
+				close();
+				return false;
+			}
 			printError("error %d in Socket:getNagle:setsockopt(TCP_NODELAY): %s\n");
 			return false;
 		}
@@ -410,6 +422,10 @@ public:
 				return true; // timed out
 			else if (errno == ECONNRESET)
 				return false; // connection closed
+			if (errno == EBADF || errno == EIO) {
+				close();
+				return false;
+			}
 			printError("error %d in Socket:send:send(): %s\n");
 			return false;
 		}
@@ -447,6 +463,10 @@ public:
 				return true; // timed out
 			else if (errno == ECONNRESET)
 				return false; // connection closed
+			if (errno == EBADF || errno == EIO) {
+				close();
+				return false;
+			}
 			printError("error %d in Socket:receive:recv(): %s\n");
 			return false;
 		} else {
@@ -491,6 +511,10 @@ public:
 				return true; // timed out
 			else if (errno == ECONNRESET)
 				return false; // connection closed
+			if (errno == EBADF || errno == EIO) {
+				close();
+				return false;
+			}
 			printError("error %d in Socket:receivefrom:recvfrom(): %s\n");
 			return false;
 		} else {
@@ -521,6 +545,10 @@ public:
 				return true; // timed out
 			else if (errno == ECONNRESET)
 				return false; // connection closed
+			if (errno == EBADF || errno == EIO) {
+				close();
+				return false;
+			}
 			printError("error %d in Socket:sendto:sendto(): %s\n");
 			return false;
 		}

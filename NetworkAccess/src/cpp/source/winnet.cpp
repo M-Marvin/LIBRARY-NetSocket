@@ -186,6 +186,10 @@ public:
 
 		int addrlen = sizeof(addr_t);
 		if (::getpeername(this->handle, &((addr_t*) address.addr)->sockaddrU, &addrlen) == SOCKET_ERROR) {
+			if (GetLastError() == ERROR_INVALID_HANDLE) {
+				close();
+				return false;
+			}
 			printError("error %d in Socket:getINet:getpeername(): %s");
 			return false;
 		}
@@ -201,7 +205,11 @@ public:
 
 		DWORD optval = enableBuffering ? 0 : 1;
 		if (::setsockopt(this->handle, IPPROTO_TCP, TCP_NODELAY, (const char*) &optval, sizeof(DWORD)) == SOCKET_ERROR) {
-			printError("error %d in Socket:setNagle:setsockopt(TCP_NODELAY): %s");
+			if (GetLastError() == ERROR_INVALID_HANDLE) {
+				close();
+				return false;
+			}
+			printError("error 0x%x in Socket:setNagle:setsockopt(TCP_NODELAY): %s");
 			return false;
 		}
 
@@ -217,7 +225,11 @@ public:
 		int optlen = sizeof(DWORD);
 		DWORD optval = 0;
 		if (::getsockopt(this->handle, IPPROTO_TCP, TCP_NODELAY, (char*) &optval, &optlen) == SOCKET_ERROR) {
-			printError("error %d in Socket:getNagle:setsockopt(TCP_NODELAY): %s");
+			if (GetLastError() == ERROR_INVALID_HANDLE) {
+				close();
+				return false;
+			}
+			printError("error 0x%x in Socket:getNagle:setsockopt(TCP_NODELAY): %s");
 			return false;
 		}
 
@@ -234,13 +246,13 @@ public:
 		this->addrType = ((addr_t*) address.addr)->sockaddrU.sa_family;
 		this->handle = ::socket(((addr_t*) address.addr)->sockaddrU.sa_family, SOCK_STREAM, IPPROTO_TCP);
 		if (this->handle == INVALID_SOCKET) {
-			printError("error %d in Socket:listen:socket(): %s");
+			printError("error 0x%x in Socket:listen:socket(): %s");
 			return false;
 		}
 
 		int result = ::bind(this->handle, &((addr_t*) address.addr)->sockaddrU, ((addr_t*) address.addr)->sockaddrU.sa_family == AF_INET ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6));
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:listen:bind(): %s");
+			printError("error 0x%x in Socket:listen:bind(): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -248,7 +260,7 @@ public:
 
 		result = ::listen(this->handle, SOMAXCONN);
 		if (result == SOCKET_ERROR) {
-			printError("error %d in Socket:listen:listen(): %s");
+			printError("error 0x%x in Socket:listen:listen(): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -267,12 +279,12 @@ public:
 		this->addrType = ((addr_t*) address.addr)->sockaddrU.sa_family;
 		this->handle = ::socket(((addr_t*) address.addr)->sockaddrU.sa_family, SOCK_DGRAM, IPPROTO_UDP);
 		if (this->handle == INVALID_SOCKET) {
-			printError("error %d in Socket:bind:socket(): %s");
+			printError("error 0x%x in Socket:bind:socket(): %s");
 			return false;
 		}
 
 		if (::bind(this->handle, &((addr_t*) address.addr)->sockaddrU, ((addr_t*) address.addr)->sockaddrU.sa_family == AF_INET ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6)) == SOCKET_ERROR) {
-			printError("error %d in Socket:bind:bind(): %s");
+			printError("error 0x%x in Socket:bind:bind(): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -294,7 +306,7 @@ public:
 
 		SOCKET clientSocket = ::accept(this->handle, NULL, NULL);
 		if (clientSocket == INVALID_SOCKET) {
-			printError("error %d in Socket:accept:accept(): %s");
+			printError("error 0x%x in Socket:accept:accept(): %s");
 			return false;
 		}
 
@@ -341,13 +353,13 @@ public:
 
 		this->handle = ::socket(((addr_t*) address.addr)->sockaddrU.sa_family, SOCK_STREAM, IPPROTO_TCP);
 		if (this->handle == INVALID_SOCKET) {
-			printError("error %d in Socket:connect:socket(): %s");
+			printError("error 0x%x in Socket:connect:socket(): %s");
 			return false;
 		}
 
 		unsigned long nonblock = 1;
 		if (::ioctlsocket(this->handle, FIONBIO, &nonblock) == SOCKET_ERROR) {
-			printError("error %d in Socket:connect:ioctlsocket(FIONBIO=1): %s");
+			printError("error 0x%x in Socket:connect:ioctlsocket(FIONBIO=1): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -363,7 +375,7 @@ public:
 		if (result == SOCKET_ERROR) {
 
 			if (WSAGetLastError() != WSAEWOULDBLOCK) {
-				printError("error %d in Socket:connect:connect(): %s");
+				printError("error 0x%x in Socket:connect:connect(): %s");
 				::closesocket(this->handle);
 				this->handle = INVALID_SOCKET;
 				return false; // error, could not start connect
@@ -378,7 +390,7 @@ public:
 					this->handle = INVALID_SOCKET;
 					return false; // timed out
 				} else if (result == SOCKET_ERROR) {
-					printError("error %d in Socket:connect:select: %s");
+					printError("error 0x%x in Socket:connect:select: %s");
 					::closesocket(this->handle);
 					this->handle = INVALID_SOCKET;
 					return false; // error while waiting
@@ -386,7 +398,7 @@ public:
 					int err = 0, optlen = sizeof(int);
 					::getsockopt(this->handle, SOL_SOCKET, SO_ERROR, (char*) &err, &optlen);
 					WSASetLastError(err);
-					printError("error %d in Socket:connect:connect(): %s");
+					printError("error 0x%x in Socket:connect:connect(): %s");
 					::closesocket(this->handle);
 					this->handle = INVALID_SOCKET;
 					return false; // returned but with error
@@ -397,7 +409,7 @@ public:
 
 		nonblock = 0;
 		if (::ioctlsocket(this->handle, FIONBIO, &nonblock) == SOCKET_ERROR) {
-			printError("error %d in Socket:connect:ioctlsocket(FIONBIO=0): %s");
+			printError("error 0x%x in Socket:connect:ioctlsocket(FIONBIO=0): %s");
 			::closesocket(this->handle);
 			this->handle = INVALID_SOCKET;
 			return false;
@@ -433,7 +445,11 @@ public:
 				return true; // timed out
 			else if (WSAGetLastError() == WSAECONNRESET || WSAGetLastError() == WSAECONNABORTED)
 				return false; // connection closed
-			printError("error %d in Socket:send:send(): %s");
+			if (GetLastError() == ERROR_INVALID_HANDLE) {
+				close();
+				return false;
+			}
+			printError("error 0x%x in Socket:send:send(): %s");
 			return false;
 		}
 
@@ -457,7 +473,11 @@ public:
 				return true; // timed out
 			else if (WSAGetLastError() == WSAECONNRESET || WSAGetLastError() == WSAECONNABORTED)
 				return false; // connection closed
-			printError("error %d in Socket:receive:recv(): %s");
+			if (GetLastError() == ERROR_INVALID_HANDLE) {
+				close();
+				return false;
+			}
+			printError("error 0x%x in Socket:receive:recv(): %s");
 			return false;
 		} else {
 			*received = result;
@@ -484,7 +504,11 @@ public:
 				return true; // timed out
 			else if (WSAGetLastError() == WSAECONNRESET || WSAGetLastError() == WSAECONNABORTED)
 				return false; // connection closed
-			printError("error %d in Socket:receivefrom:recvfrom(): %s");
+			if (GetLastError() == ERROR_INVALID_HANDLE) {
+				close();
+				return false;
+			}
+			printError("error 0x%x in Socket:receivefrom:recvfrom(): %s");
 			return false;
 		} else {
 			*received = result;
@@ -514,7 +538,11 @@ public:
 				return true; // timed out
 			else if (WSAGetLastError() == WSAECONNRESET || WSAGetLastError() == WSAECONNABORTED)
 				return false; // connection closed
-			printError("error %d in Socket:sendto:sendto(): %s");
+			if (GetLastError() == ERROR_INVALID_HANDLE) {
+				close();
+				return false;
+			}
+			printError("error 0x%x in Socket:sendto:sendto(): %s");
 			return false;
 		}
 
